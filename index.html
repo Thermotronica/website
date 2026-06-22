@@ -299,9 +299,9 @@
 
                 console.log('✅ Connected:', userWallet);
 
-                // Privacy-first, open public endpoint cluster
+                // Utilizing stable public shared community hub infrastructure
                 connection = new solanaWeb3.Connection(
-                    'https://solana-rpc.publicnode.com',
+                    'https://mainnet.helius-rpc.com/?api-key=30e46a74-d4b1-419b-9800-4e3ff9f91a92',
                     'confirmed'
                 );
 
@@ -357,7 +357,7 @@
                         localStorage.setItem('elurBalance', elurBalance);
 
                         if (elurBalance > 0) {
-                            console.log('🚀 ELUR Token detected. Redirecting to Word Tool portal...');
+                            console.log('🚀 ELUR Token detected. Opening portal...');
                             window.location.href = "gemini-code-1782159502550.html";
                         }
                     }
@@ -377,7 +377,7 @@
                 updateTerminal([
                     { label: 'wallet', value: userWallet.slice(0, 4) + '...' + userWallet.slice(-4), type: 'success' },
                     { label: 'status', value: 'connected', type: 'success' },
-                    { label: 'rpc node', value: 'retrying contact...', type: 'error' }
+                    { label: 'rpc node', value: 'error checking network', type: 'error' }
                 ]);
             }
         }
@@ -431,7 +431,7 @@
                     walletConnected = true;
 
                     connection = new solanaWeb3.Connection(
-                        'https://solana-rpc.publicnode.com',
+                        'https://mainnet.helius-rpc.com/?api-key=30e46a74-d4b1-419b-9800-4e3ff9f91a92',
                         'confirmed'
                     );
 
@@ -449,7 +449,7 @@
             }
         }
 
-        // Animations (completely decoupled from wallet loops)
+        // Animations (decoupled from blockchain loops)
         const text = document.getElementById("bounceText");
         let x = 100, y = 100;
         let dx = 2, dy = 2;
