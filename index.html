@@ -2,14 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ghosteyezzzz</title>
     <style>
-        body {
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
             background: black;
             overflow: hidden;
             font-family: monospace;
             color: #0aff9d;
+            height: 100vh;
         }
 
         /* Cursed Matrix Title */
@@ -41,6 +48,8 @@
             height: 260px;
             opacity: 0.7;
             animation: fade 6s infinite ease-in-out, invertCycle 6s infinite steps(2);
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(10, 255, 157, 0.3));
         }
 
         @keyframes fade {
@@ -52,9 +61,9 @@
         }
 
         @keyframes invertCycle {
-            0% { filter: invert(0); }
-            50% { filter: invert(1); }
-            100% { filter: invert(0); }
+            0% { filter: invert(0) drop-shadow(0 0 20px rgba(10, 255, 157, 0.3)); }
+            50% { filter: invert(1) drop-shadow(0 0 20px rgba(10, 255, 157, 0.3)); }
+            100% { filter: invert(0) drop-shadow(0 0 20px rgba(10, 255, 157, 0.3)); }
         }
 
         /* Bouncing Blu-ray style text */
@@ -67,18 +76,135 @@
             white-space: nowrap;
         }
 
-        /* Stop button */
+        /* Mini Terminal */
+        #terminal {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #0aff9d;
+            border-radius: 4px;
+            padding: 15px;
+            z-index: 30;
+            max-width: 400px;
+            box-shadow: 0 0 20px rgba(10, 255, 157, 0.4), inset 0 0 10px rgba(10, 255, 157, 0.1);
+            font-size: 0.85rem;
+            line-height: 1.8;
+            min-width: 320px;
+        }
+
+        .terminal-line {
+            color: #0aff9d;
+            margin: 4px 0;
+            text-shadow: 0 0 5px rgba(10, 255, 157, 0.5);
+        }
+
+        .terminal-label {
+            opacity: 0.6;
+            display: inline-block;
+            min-width: 100px;
+        }
+
+        .terminal-value {
+            opacity: 1;
+            font-weight: bold;
+        }
+
+        .terminal-success {
+            color: #44ff44;
+            text-shadow: 0 0 5px rgba(68, 255, 68, 0.5);
+        }
+
+        .terminal-error {
+            color: #ff4444;
+            text-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
+        }
+
+        .terminal-loading {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0.3; }
+        }
+
+        .terminal-button-group {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        #connectBtn, #buyBtn, #refreshBtn, #stopBtn, #disconnectBtn {
+            padding: 8px 12px;
+            background: #0aff9d;
+            color: black;
+            border: none;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 3px;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: monospace;
+            flex: 1;
+        }
+
+        #connectBtn:hover, #buyBtn:hover, #refreshBtn:hover, #stopBtn:hover, #disconnectBtn:hover {
+            background: #08cc7f;
+            box-shadow: 0 0 10px rgba(10, 255, 157, 0.6);
+        }
+
+        #connectBtn:disabled {
+            background: #555;
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        #disconnectBtn {
+            background: #666;
+            flex: 0.5;
+        }
+
+        #disconnectBtn:hover {
+            background: #555;
+        }
+
         #stopBtn {
             position: absolute;
             bottom: 20px;
             right: 20px;
-            padding: 10px 20px;
-            background: #0aff9d;
-            color: black;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
-            z-index: 30;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(10, 255, 157, 0.2);
+            margin: 8px 0;
+        }
+
+        @media (max-width: 600px) {
+            #terminal {
+                bottom: 60px;
+                left: 10px;
+                right: 10px;
+                max-width: none;
+                font-size: 0.75rem;
+            }
+
+            #stopBtn {
+                bottom: 10px;
+                right: 10px;
+                padding: 8px 10px;
+                font-size: 0.75rem;
+            }
+
+            .terminal-button-group {
+                flex-wrap: wrap;
+            }
+
+            #connectBtn, #buyBtn, #refreshBtn, #disconnectBtn {
+                flex: 1 1 calc(50% - 4px);
+            }
         }
     </style>
 </head>
@@ -86,21 +212,255 @@
 
     <div id="title">Ghosteyezzzz</div>
 
-    <!-- Fixed: Changed .jpeg to .jpg to match actual filename -->
-    <img src="ghosteyezzzz.jpg" class="ghost" style="top:10%; left:20%; animation-delay:0s;" alt="Ghosteyezzzz graphic 1">
-    <img src="ghosteyezzzz.jpg" class="ghost" style="top:50%; left:60%; animation-delay:2s;" alt="Ghosteyezzzz graphic 2">
-    <img src="ghosteyezzzz.jpg" class="ghost" style="top:70%; left:30%; animation-delay:4s;" alt="Ghosteyezzzz graphic 3">
-
+    <!-- Floating eye images -->
+    <img src="IMG_3057.PNG" class="ghost" style="top:10%; left:20%; animation-delay:0s;" alt="Ghosteyezzzz graphic 1">
+    <img src="IMG_3057.PNG" class="ghost" style="top:50%; left:60%; animation-delay:2s;" alt="Ghosteyezzzz graphic 2">
+    <img src="IMG_3057.PNG" class="ghost" style="top:70%; left:30%; animation-delay:4s;" alt="Ghosteyezzzz graphic 3">
     <div id="bounceText">Ghosteyezzzz is for sleep and fun</div>
-    <button id="stopBtn">Stop Animations</button>
+
+    <!-- Mini Terminal -->
+    <div id="terminal">
+        <div class="terminal-line">
+            <span class="terminal-label">> system</span>
+            <span class="terminal-value">ELUR TOKEN v1.0</span>
+        </div>
+        
+        <div id="terminalContent">
+            <div class="terminal-line">
+                <span class="terminal-label">> status</span>
+                <span class="terminal-value">awaiting connection</span>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="terminal-button-group">
+            <button id="connectBtn" type="button">🔗 Connect</button>
+            <button id="buyBtn" type="button" style="display:none;">💎 Buy</button>
+            <button id="refreshBtn" type="button" style="display:none;">🔄 Refresh</button>
+            <button id="disconnectBtn" type="button" style="display:none;">✕</button>
+        </div>
+    </div>
+
+    <button id="stopBtn" type="button">Stop Animations</button>
 
     <script>
-        /* Bouncing text like the Blu-ray logo */
+        // Solana Web3 imports via CDN
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js';
+        script.onload = initializeApp;
+        document.head.appendChild(script);
+
+        console.log('🔮 Ghosteyezzzz initializing...');
+
+        const TOKEN_MINT = 'ELURv1srPxU12BCQc1NuPMUB2aCavtZHJtXtuNCtT2FC';
+        const PHANTOM_TRADE_URL = `https://trade.phantom.com/token/${TOKEN_MINT}`;
+        
+        let walletConnected = false;
+        let userWallet = null;
+        let connection = null;
+
+        function updateTerminal(lines) {
+            const content = document.getElementById('terminalContent');
+            content.innerHTML = lines.map(line => {
+                if (line.type === 'success') {
+                    return `<div class="terminal-line"><span class="terminal-label">> ${line.label}</span> <span class="terminal-value terminal-success">${line.value}</span></div>`;
+                } else if (line.type === 'error') {
+                    return `<div class="terminal-line"><span class="terminal-label">> ${line.label}</span> <span class="terminal-value terminal-error">${line.value}</span></div>`;
+                } else if (line.type === 'loading') {
+                    return `<div class="terminal-line"><span class="terminal-label">> ${line.label}</span> <span class="terminal-value terminal-loading">${line.value}</span></div>`;
+                }
+                return `<div class="terminal-line"><span class="terminal-label">> ${line.label}</span> <span class="terminal-value">${line.value}</span></div>`;
+            }).join('');
+        }
+
+        function isPhantomInstalled() {
+            return !!(window.solana && window.solana.isPhantom);
+        }
+
+        async function connectPhantomWallet() {
+            console.log('🔗 Connecting to Phantom...');
+            
+            if (!isPhantomInstalled()) {
+                updateTerminal([
+                    { label: 'error', value: 'Phantom not found', type: 'error' }
+                ]);
+                return;
+            }
+
+            const connectBtn = document.getElementById('connectBtn');
+            connectBtn.disabled = true;
+            updateTerminal([
+                { label: 'status', value: 'connecting...', type: 'loading' }
+            ]);
+
+            try {
+                const response = await window.solana.connect();
+                userWallet = response.publicKey.toString();
+                walletConnected = true;
+
+                console.log('✅ Connected:', userWallet);
+
+                // Initialize Solana connection
+                connection = new solanaWeb3.Connection(
+                    'https://api.mainnet-beta.solana.com',
+                    'confirmed'
+                );
+
+                updateTerminal([
+                    { label: 'wallet', value: userWallet.slice(0, 4) + '...' + userWallet.slice(-4), type: 'success' },
+                    { label: 'status', value: 'connected', type: 'success' },
+                    { label: 'balance', value: 'fetching...', type: 'loading' }
+                ]);
+
+                document.getElementById('buyBtn').style.display = 'inline-block';
+                document.getElementById('refreshBtn').style.display = 'inline-block';
+                document.getElementById('disconnectBtn').style.display = 'inline-block';
+                document.getElementById('connectBtn').style.display = 'none';
+
+                await getELURBalance();
+
+            } catch (error) {
+                console.error('❌ Connection failed:', error);
+                updateTerminal([
+                    { label: 'error', value: error.message, type: 'error' }
+                ]);
+                connectBtn.disabled = false;
+            }
+        }
+
+        async function getELURBalance() {
+            if (!userWallet || !connection) {
+                console.log('No wallet or connection');
+                return;
+            }
+
+            try {
+                console.log('💰 Getting ELUR balance for:', userWallet);
+                
+                const PublicKey = solanaWeb3.PublicKey;
+                const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJsyFbPVwwQQfjarZaMS5dC76fy');
+                
+                // Get all token accounts for this wallet
+                const response = await connection.getParsedTokenAccountsByOwner(
+                    new PublicKey(userWallet),
+                    { programId: TOKEN_PROGRAM_ID }
+                );
+
+                console.log('Token accounts found:', response.value.length);
+
+                // Find ELUR token account
+                let elurBalance = 0;
+                response.value.forEach(account => {
+                    const mint = account.account.data.parsed.info.mint;
+                    const balance = account.account.data.parsed.info.tokenAmount.uiAmount;
+                    
+                    console.log('Token:', mint, 'Balance:', balance);
+                    
+                    if (mint === TOKEN_MINT) {
+                        elurBalance = balance;
+                        console.log('✅ Found ELUR:', elurBalance);
+                    }
+                });
+
+                const usdValue = (elurBalance * 0.001).toFixed(2);
+
+                updateTerminal([
+                    { label: 'wallet', value: userWallet.slice(0, 4) + '...' + userWallet.slice(-4), type: 'success' },
+                    { label: 'status', value: 'connected', type: 'success' },
+                    { label: 'balance', value: `${elurBalance.toFixed(2)} ELUR`, type: 'success' },
+                    { label: 'value', value: `$${usdValue} USD`, type: 'success' }
+                ]);
+
+            } catch (error) {
+                console.error('❌ Balance fetch failed:', error);
+                updateTerminal([
+                    { label: 'wallet', value: userWallet.slice(0, 4) + '...' + userWallet.slice(-4), type: 'success' },
+                    { label: 'status', value: 'connected', type: 'success' },
+                    { label: 'error', value: error.message, type: 'error' }
+                ]);
+            }
+        }
+
+        function buyTokens() {
+            console.log('💎 Opening Phantom trade...');
+            window.open(PHANTOM_TRADE_URL, '_blank');
+            setTimeout(() => {
+                if (walletConnected) {
+                    getELURBalance();
+                }
+            }, 3000);
+        }
+
+        function disconnectWallet() {
+            console.log('❌ Disconnecting...');
+            if (window.solana) {
+                window.solana.disconnect();
+            }
+            walletConnected = false;
+            userWallet = null;
+
+            updateTerminal([
+                { label: 'status', value: 'disconnected', type: 'success' }
+            ]);
+
+            document.getElementById('connectBtn').style.display = 'inline-block';
+            document.getElementById('buyBtn').style.display = 'none';
+            document.getElementById('refreshBtn').style.display = 'none';
+            document.getElementById('disconnectBtn').style.display = 'none';
+        }
+
+        // Initialize app after web3 library loads
+        async function initializeApp() {
+            console.log('✅ Solana Web3 library loaded');
+            
+            // Event listeners
+            document.getElementById('connectBtn').addEventListener('click', connectPhantomWallet);
+            document.getElementById('buyBtn').addEventListener('click', buyTokens);
+            document.getElementById('refreshBtn').addEventListener('click', getELURBalance);
+            document.getElementById('disconnectBtn').addEventListener('click', disconnectWallet);
+
+            // Check for existing connection
+            if (isPhantomInstalled()) {
+                try {
+                    const response = await window.solana.connect({ onlyIfTrusted: true });
+                    userWallet = response.publicKey.toString();
+                    walletConnected = true;
+
+                    // Initialize Solana connection
+                    connection = new solanaWeb3.Connection(
+                        'https://api.mainnet-beta.solana.com',
+                        'confirmed'
+                    );
+
+                    console.log('🔄 Auto-connected:', userWallet);
+
+                    updateTerminal([
+                        { label: 'wallet', value: userWallet.slice(0, 4) + '...' + userWallet.slice(-4), type: 'success' },
+                        { label: 'status', value: 'connected', type: 'success' },
+                        { label: 'balance', value: 'fetching...', type: 'loading' }
+                    ]);
+
+                    document.getElementById('buyBtn').style.display = 'inline-block';
+                    document.getElementById('refreshBtn').style.display = 'inline-block';
+                    document.getElementById('disconnectBtn').style.display = 'inline-block';
+                    document.getElementById('connectBtn').style.display = 'none';
+
+                    await getELURBalance();
+                } catch (error) {
+                    console.log('Not previously connected');
+                }
+            }
+        }
+
+        // Animations
         const text = document.getElementById("bounceText");
         let x = 100, y = 100;
         let dx = 2, dy = 2;
+        let animating = true;
 
         function bounce() {
+            if (!animating) return;
             const w = window.innerWidth;
             const h = window.innerHeight;
             x += dx;
@@ -115,12 +475,13 @@
         }
         let bounceInterval = requestAnimationFrame(bounce);
 
-        /* Stop animations button */
-        document.getElementById("stopBtn").onclick = () => {
+        document.getElementById("stopBtn").addEventListener('click', () => {
+            animating = false;
             document.querySelectorAll(".ghost").forEach(el => el.style.animation = "none");
             text.style.animation = "none";
             cancelAnimationFrame(bounceInterval);
-        };
+            document.getElementById("stopBtn").innerHTML = "Animations Stopped ⏸";
+        });
     </script>
 </body>
 </html>
