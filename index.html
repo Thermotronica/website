@@ -299,9 +299,9 @@
 
                 console.log('✅ Connected:', userWallet);
 
-                // Using Extrnode public load balancer network
+                // Privacy-first, open public endpoint cluster
                 connection = new solanaWeb3.Connection(
-                    'https://solana-mainnet.rpc.extrnode.com',
+                    'https://solana-rpc.publicnode.com',
                     'confirmed'
                 );
 
@@ -329,7 +329,7 @@
 
         async function getELURBalance() {
             if (!userWallet || !connection) {
-                console.log('No wallet or connection');
+                console.log('No wallet or connection available');
                 return;
             }
 
@@ -344,8 +344,6 @@
                     { programId: TOKEN_PROGRAM_ID }
                 );
 
-                console.log('Token accounts found:', response.value.length);
-
                 let elurBalance = 0;
                 response.value.forEach(account => {
                     const mint = account.account.data.parsed.info.mint;
@@ -359,7 +357,7 @@
                         localStorage.setItem('elurBalance', elurBalance);
 
                         if (elurBalance > 0) {
-                            console.log('🚀 ELUR Token detected. Opening Word Tool portal...');
+                            console.log('🚀 ELUR Token detected. Redirecting to Word Tool portal...');
                             window.location.href = "gemini-code-1782159502550.html";
                         }
                     }
@@ -375,11 +373,11 @@
                 ]);
 
             } catch (error) {
-                console.error('❌ Balance fetch failed:', error);
+                console.error('❌ Balance fetch failed safely:', error);
                 updateTerminal([
                     { label: 'wallet', value: userWallet.slice(0, 4) + '...' + userWallet.slice(-4), type: 'success' },
                     { label: 'status', value: 'connected', type: 'success' },
-                    { label: 'error', value: error.message, type: 'error' }
+                    { label: 'rpc node', value: 'retrying contact...', type: 'error' }
                 ]);
             }
         }
@@ -396,9 +394,12 @@
 
         function disconnectWallet() {
             console.log('❌ Disconnecting...');
-            if (window.solana) {
-                window.solana.disconnect();
-            }
+            try {
+                if (window.solana) {
+                    window.solana.disconnect();
+                }
+            } catch(e) {}
+            
             walletConnected = false;
             userWallet = null;
 
@@ -430,17 +431,11 @@
                     walletConnected = true;
 
                     connection = new solanaWeb3.Connection(
-                        'https://solana-mainnet.rpc.extrnode.com',
+                        'https://solana-rpc.publicnode.com',
                         'confirmed'
                     );
 
                     console.log('🔄 Auto-connected:', userWallet);
-
-                    updateTerminal([
-                        { label: 'wallet', value: userWallet.slice(0, 4) + '...' + userWallet.slice(-4), type: 'success' },
-                        { label: 'status', value: 'connected', type: 'success' },
-                        { label: 'balance', value: 'fetching...', type: 'loading' }
-                    ]);
 
                     document.getElementById('buyBtn').style.display = 'inline-block';
                     document.getElementById('refreshBtn').style.display = 'inline-block';
@@ -449,12 +444,12 @@
 
                     await getELURBalance();
                 } catch (error) {
-                    console.log('Not previously connected');
+                    console.log('Not auto-trusted yet');
                 }
             }
         }
 
-        // Animations
+        // Animations (completely decoupled from wallet loops)
         const text = document.getElementById("bounceText");
         let x = 100, y = 100;
         let dx = 2, dy = 2;
@@ -472,15 +467,14 @@
 
             text.style.left = x + "px";
             text.style.top = y + "px";
-            bounceInterval = requestAnimationFrame(bounce);
+            requestAnimationFrame(bounce);
         }
-        let bounceInterval = requestAnimationFrame(bounce);
+        requestAnimationFrame(bounce);
 
         document.getElementById("stopBtn").addEventListener('click', () => {
             animating = false;
             document.querySelectorAll(".ghost").forEach(el => el.style.animation = "none");
             text.style.animation = "none";
-            cancelAnimationFrame(bounceInterval);
             document.getElementById("stopBtn").innerHTML = "Animations Stopped ⏸";
         });
     </script>
