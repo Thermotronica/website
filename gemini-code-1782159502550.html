@@ -1,40 +1,165 @@
-<h1>word tool</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>word tool</title>
+  
+  <style>
+    /* --- CORE SYSTEM GRAPHICS --- */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-<div class="wallet-container" style="margin-bottom: 20px;">
-  <button id="btn-connect-wallet" style="padding: 6px 12px; background: #1a3a1a; color: #33ff66; border: 0.5px solid #33ff66; cursor: pointer;">
-    Connect Wallet
-  </button>
-  <span id="wallet-status" style="margin-left: 10px; color: #226622; font-size: 0.75rem;">Disconnected</span>
-</div>
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0e0e0e;
+      color: #c8ffc8;
+      padding: 2rem;
+      max-width: 600px;
+    }
 
-<div id="budget-row">
-  <span>budget</span>
-  <div id="budget-bar"><div id="budget-fill"></div></div>
-  <span id="budget">80</span>
-</div>
+    h1 {
+      font-size: 1rem;
+      font-weight: normal;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #33ff66;
+      margin-bottom: 1.5rem;
+    }
 
-<div id="input-row">
-  <input type="text" id="word-in" maxlength="80" placeholder="type a word or phrase">
-  <button id="btn-submit">transform</button>
-  <button id="btn-reset">reset</button>
-</div>
+    #budget-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.2rem;
+      font-size: 0.75rem;
+      color: #226622;
+    }
 
-<label for="word-out">output</label>
-<textarea id="word-out" rows="10" readonly></textarea>
+    #budget-bar {
+      flex: 1;
+      height: 3px;
+      background: #111;
+      border-radius: 2px;
+      overflow: hidden;
+    }
 
-<p id="history-label">history</p>
-<ul id="history"></ul>
+    #budget-fill {
+      height: 100%;
+      width: 100%;
+      background: #33ff66;
+      transition: width 0.2s, background 0.3s;
+    }
 
+    #budget {
+      min-width: 36px;
+      text-align: right;
+      color: #33ff66;
+    }
 
-<style>
-  /* Paste all your CSS from CodePen here */
-  body { font-family: 'Courier New', monospace; background: #0e0e0e; }
-  #budget-row { display: flex; align-items: center; }
-  /* ... the rest of your CSS ... */
-</style>
+    #input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
 
+    input[type="text"] {
+      flex: 1;
+      background: #111;
+      border: 0.5px solid #1a3a1a;
+      color: #c8ffc8;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      padding: 6px 10px;
+      outline: none;
+    }
 
-<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.0/lib/index.iife.js"></script>
+    input[type="text"]:focus {
+      border-color: #33ff66;
+    }
+
+    button {
+      background: transparent;
+      border: 0.5px solid #1a3a1a;
+      color: #33ff66;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: #33ff66; }
+    button:active { opacity: 0.6; }
+
+    label, #history-label {
+      display: block;
+      font-size: 0.7rem;
+      color: #226622;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      margin-top: 1rem;
+    }
+
+    textarea {
+      width: 100%;
+      background: #111;
+      border: 0.5px solid #1a3a1a;
+      color: #c8ffc8;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      padding: 8px 10px;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+    }
+
+    #history {
+      list-style: none;
+      font-size: 0.75rem;
+      color: #226622;
+      margin-top: 0.5rem;
+    }
+
+    #history li {
+      padding: 3px 0;
+      border-bottom: 0.5px solid #0f1f0f;
+    }
+
+    #history li span.out {
+      color: #33ff66;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>word tool</h1>
+
+  <div class="wallet-container" style="margin-bottom: 20px;">
+    <button id="btn-connect-wallet" style="padding: 6px 12px; background: #1a3a1a; color: #33ff66; border: 0.5px solid #33ff66; cursor: pointer;">
+      Connect Wallet
+    </button>
+    <span id="wallet-status" style="margin-left: 10px; color: #226622; font-size: 0.75rem;">Disconnected</span>
+  </div>
+
+  <div id="budget-row">
+    <span>budget</span>
+    <div id="budget-bar"><div id="budget-fill"></div></div>
+    <span id="budget">80</span>
+  </div>
+
+  <div id="input-row">
+    <input type="text" id="word-in" maxlength="80" placeholder="type a word or phrase">
+    <button id="btn-submit">transform</button>
+    <button id="btn-reset">reset</button>
+  </div>
+
+  <label for="word-out">output</label>
+  <textarea id="word-out" rows="10" readonly></textarea>
+
+  <p id="history-label">history</p>
+  <ul id="history"></ul>
+
+  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.0/lib/index.iife.js"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -176,8 +301,7 @@
       updateBar();
     });
   </script>
-
-
-<script>
+</body>
+</html>
 
 </script>
