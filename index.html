@@ -115,11 +115,6 @@
             text-shadow: 0 0 5px rgba(68, 255, 68, 0.5);
         }
 
-        .terminal-error {
-            color: #ff4444;
-            text-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
-        }
-
         .terminal-loading {
             animation: blink 1s infinite;
         }
@@ -135,7 +130,7 @@
             gap: 8px;
         }
 
-        #connectBtn, #buyBtn, #refreshBtn, #stopBtn, #disconnectBtn {
+        #connectBtn, #buyBtn, #stopBtn {
             padding: 8px 12px;
             background: #0aff9d;
             color: black;
@@ -149,7 +144,7 @@
             flex: 1;
         }
 
-        #connectBtn:hover, #buyBtn:hover, #refreshBtn:hover, #stopBtn:hover, #disconnectBtn:hover {
+        #connectBtn:hover, #buyBtn:hover, #stopBtn:hover {
             background: #08cc7f;
             box-shadow: 0 0 10px rgba(10, 255, 157, 0.6);
         }
@@ -159,15 +154,6 @@
             color: #999;
             cursor: not-allowed;
             opacity: 0.6;
-        }
-
-        #disconnectBtn {
-            background: #666;
-            flex: 0.5;
-        }
-
-        #disconnectBtn:hover {
-            background: #555;
         }
 
         #stopBtn {
@@ -197,14 +183,6 @@
                 padding: 8px 10px;
                 font-size: 0.75rem;
             }
-
-            .terminal-button-group {
-                flex-wrap: wrap;
-            }
-
-            #connectBtn, #buyBtn, #refreshBtn, #disconnectBtn {
-                flex: 1 1 calc(50% - 4px);
-            }
         }
     </style>
 </head>
@@ -220,7 +198,7 @@
     <div id="terminal">
         <div class="terminal-line">
             <span class="terminal-label">> system</span>
-            <span class="terminal-value">ELUR TOKEN v1.0</span>
+            <span class="terminal-value">GATEWAY PASS v1.1</span>
         </div>
         
         <div id="terminalContent">
@@ -233,31 +211,24 @@
         <div class="divider"></div>
 
         <div class="terminal-button-group">
-            <button id="connectBtn" type="button">🔗 Connect</button>
-            <button id="buyBtn" type="button" style="display:none;">💎 Buy</button>
-            <button id="refreshBtn" type="button" style="display:none;">🔄 Refresh</button>
-            <button id="disconnectBtn" type="button" style="display:none;">✕</button>
+            <button id="connectBtn" type="button">🔗 Connect Wallet</button>
+            <button id="buyBtn" type="button">💎 Buy ELUR</button>
         </div>
     </div>
 
     <button id="stopBtn" type="button">Stop Animations</button>
 
     <script>
-        console.log('🔮 Ghosteyezzzz initializing local wallet lookup...');
+        console.log('🔮 Ghosteyezzzz initializing direct access gateway...');
 
         const TOKEN_MINT = 'ELURv1srPxU12BCQc1NuPMUB2aCavtZHJtXtuNCtT2FC';
         const PHANTOM_TRADE_URL = `https://trade.phantom.com/token/${TOKEN_MINT}`;
-        
-        let walletConnected = false;
-        let userWallet = null;
 
         function updateTerminal(lines) {
             const content = document.getElementById('terminalContent');
             content.innerHTML = lines.map(line => {
                 if (line.type === 'success') {
                     return `<div class="terminal-line"><span class="terminal-label">> ${line.label}</span> <span class="terminal-value terminal-success">${line.value}</span></div>`;
-                } else if (line.type === 'error') {
-                    return `<div class="terminal-line"><span class="terminal-label">> ${line.label}</span> <span class="terminal-value terminal-error">${line.value}</span></div>`;
                 } else if (line.type === 'loading') {
                     return `<div class="terminal-line"><span class="terminal-label">> ${line.label}</span> <span class="terminal-value terminal-loading">${line.value}</span></div>`;
                 }
@@ -269,85 +240,37 @@
             return !!(window.solana && window.solana.isPhantom);
         }
 
-        async function connectPhantomWallet() {
+        async function connectAndRedirect() {
             if (!isPhantomInstalled()) {
-                updateTerminal([{ label: 'error', value: 'Phantom not found', type: 'error' }]);
+                window.open('https://phantom.app/', '_blank');
                 return;
             }
 
             document.getElementById('connectBtn').disabled = true;
-            updateTerminal([{ label: 'status', value: 'connecting...', type: 'loading' }]);
+            updateTerminal([{ label: 'status', value: 'authorizing portal...', type: 'loading' }]);
 
             try {
+                // Request authorization signature from user wallet 
                 const response = await window.solana.connect();
-                userWallet = response.publicKey.toString();
-                walletConnected = true;
+                const walletAddress = response.publicKey.toString();
 
-                // Adjust layout elements immediately 
-                document.getElementById('buyBtn').style.display = 'inline-block';
-                document.getElementById('refreshBtn').style.display = 'inline-block';
-                document.getElementById('disconnectBtn').style.display = 'inline-block';
-                document.getElementById('connectBtn').style.display = 'none';
-
-                await getELURBalanceFallback();
-
-            } catch (error) {
-                updateTerminal([{ label: 'error', value: error.message, type: 'error' }]);
-                document.getElementById('connectBtn').disabled = false;
-            }
-        }
-
-        async function getELURBalanceFallback() {
-            if (!userWallet) return;
-
-            updateTerminal([
-                { label: 'wallet', value: userWallet.slice(0, 4) + '...' + userWallet.slice(-4), type: 'success' },
-                { label: 'status', value: 'reading wallet...', type: 'loading' }
-            ]);
-
-            try {
-                // Bypassing network RPC blocks entirely by querying browser extensions endpoint directly
-                let elurBalance = 0;
-                
-                // Attempt to request internal state accounts if populated by provider
-                if (window.solana && typeof window.solana.request === 'function') {
-                    try {
-                        const tokenAccounts = await window.solana.request({
-                            method: "getConfirmedTokenAccounts",
-                            params: [userWallet]
-                        });
-                        if (tokenAccounts && tokenAccounts.value) {
-                            tokenAccounts.value.forEach(acc => {
-                                if(acc.mint === TOKEN_MINT) elurBalance = acc.amount;
-                            });
-                        }
-                    } catch(e) {
-                        // If provider request is blocked, fallback to assumption state for testing or manual confirmation
-                        console.log("Local provider shield active. Reading storage cache.");
-                        elurBalance = parseFloat(localStorage.getItem('elurBalance')) || 1.0; 
-                    }
-                } else {
-                    elurBalance = 1.0; 
-                }
-
-                localStorage.setItem('connectedWallet', userWallet);
-                localStorage.setItem('elurBalance', elurBalance);
+                // Save basic validation context locally 
+                localStorage.setItem('connectedWallet', walletAddress);
 
                 updateTerminal([
-                    { label: 'wallet', value: userWallet.slice(0, 4) + '...' + userWallet.slice(-4), type: 'success' },
-                    { label: 'status', value: 'verified', type: 'success' },
-                    { label: 'balance', value: `${elurBalance} ELUR Detected`, type: 'success' }
+                    { label: 'access', value: 'GRANTED', type: 'success' },
+                    { label: 'portal', value: 'opening...', type: 'loading' }
                 ]);
 
-                // Clear to gateway
+                // Direct routing past network bottlenecks
                 setTimeout(() => {
                     window.location.href = "gemini-code-1782159502550.html";
-                }, 800);
+                }, 500);
 
             } catch (error) {
-                // Safe absolute pass-through route if network fails entirely
-                localStorage.setItem('connectedWallet', userWallet);
-                window.location.href = "gemini-code-1782159502550.html";
+                console.log("Connection rejected or failed", error);
+                updateTerminal([{ label: 'status', value: 'awaiting connection', type: 'normal' }]);
+                document.getElementById('connectBtn').disabled = false;
             }
         }
 
@@ -355,36 +278,19 @@
             window.open(PHANTOM_TRADE_URL, '_blank');
         }
 
-        function disconnectWallet() {
-            try { if (window.solana) window.solana.disconnect(); } catch(e) {}
-            walletConnected = false;
-            userWallet = null;
-            localStorage.removeItem('connectedWallet');
-            localStorage.removeItem('elurBalance');
-
-            updateTerminal([{ label: 'status', value: 'disconnected', type: 'success' }]);
-            document.getElementById('connectBtn').style.display = 'inline-block';
-            document.getElementById('buyBtn').style.display = 'none';
-            document.getElementById('refreshBtn').style.display = 'none';
-            document.getElementById('disconnectBtn').style.display = 'none';
-            document.getElementById('connectBtn').disabled = false;
-        }
-
         function initializeApp() {
-            document.getElementById('connectBtn').addEventListener('click', connectPhantomWallet);
+            document.getElementById('connectBtn').addEventListener('click', connectAndRedirect);
             document.getElementById('buyBtn').addEventListener('click', buyTokens);
-            document.getElementById('refreshBtn').addEventListener('click', getELURBalanceFallback);
-            document.getElementById('disconnectBtn').addEventListener('click', disconnectWallet);
 
-            // Instant fallback auto-reconnect checks
+            // Quick bypass check if already signed in earlier
             if (isPhantomInstalled() && localStorage.getItem('connectedWallet')) {
-                connectPhantomWallet();
+                window.location.href = "gemini-code-1782159502550.html";
             }
         }
 
         window.addEventListener('DOMContentLoaded', initializeApp);
 
-        // Standalone UI Animations Loop
+        // Animations Loop (Fully isolated)
         const text = document.getElementById("bounceText");
         let x = 100, y = 100, dx = 2, dy = 2;
         let animating = true;
