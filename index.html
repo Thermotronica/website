@@ -299,9 +299,9 @@
 
                 console.log('✅ Connected:', userWallet);
 
-                // Initialize Solana connection
+                // Initialize stable public endpoint infrastructure
                 connection = new solanaWeb3.Connection(
-                    'https://api.mainnet-beta.solana.com',
+                    'https://rpc.ankr.com/solana',
                     'confirmed'
                 );
 
@@ -439,9 +439,9 @@
                     userWallet = response.publicKey.toString();
                     walletConnected = true;
 
-                    // Initialize Solana connection
+                    // Initialize stable public endpoint infrastructure
                     connection = new solanaWeb3.Connection(
-                        'https://api.mainnet-beta.solana.com',
+                        'https://rpc.ankr.com/solana',
                         'confirmed'
                     );
 
