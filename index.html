@@ -212,13 +212,11 @@
 
     <div id="title">Ghosteyezzzz</div>
 
-    <!-- Floating eye images -->
     <img src="IMG_3057.PNG" class="ghost" style="top:10%; left:20%; animation-delay:0s;" alt="Ghosteyezzzz graphic 1">
     <img src="IMG_3057.PNG" class="ghost" style="top:50%; left:60%; animation-delay:2s;" alt="Ghosteyezzzz graphic 2">
     <img src="IMG_3057.PNG" class="ghost" style="top:70%; left:30%; animation-delay:4s;" alt="Ghosteyezzzz graphic 3">
     <div id="bounceText">Ghosteyezzzz is for sleep and fun</div>
 
-    <!-- Mini Terminal -->
     <div id="terminal">
         <div class="terminal-line">
             <span class="terminal-label">> system</span>
@@ -360,6 +358,16 @@
                     if (mint === TOKEN_MINT) {
                         elurBalance = balance;
                         console.log('✅ Found ELUR:', elurBalance);
+
+                        // Save current data structures to shared browser memory
+                        localStorage.setItem('connectedWallet', userWallet);
+                        localStorage.setItem('elurBalance', elurBalance);
+
+                        // AUTOMATIC REDIRECT BRIDGE
+                        if (elurBalance > 0) {
+                            console.log('🚀 ELUR Token detected. Opening Word Tool portal...');
+                            window.location.href = "gemini-code-1782159502550.html";
+                        }
                     }
                 });
 
@@ -399,6 +407,10 @@
             }
             walletConnected = false;
             userWallet = null;
+
+            // Clear browser handoff storage on logout
+            localStorage.removeItem('connectedWallet');
+            localStorage.removeItem('elurBalance');
 
             updateTerminal([
                 { label: 'status', value: 'disconnected', type: 'success' }
