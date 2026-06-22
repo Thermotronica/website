@@ -36,9 +36,148 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.0/lib/index.iife.js"></script>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const MAX_BUDGET = 1000;
+      let budget = 80;
+      let walletBalance = 0;
+
+      const btnSubmit = document.getElementById('btn-submit');
+      const btnReset = document.getElementById('btn-reset');
+      const btnConnect = document.getElementById('btn-connect-wallet');
+      const walletStatus = document.getElementById('wallet-status');
+      const wordIn = document.getElementById('word-in');
+      const wordOut = document.getElementById('word-out');
+      const historyList = document.getElementById('history');
+
+      const THESAURUS_POOLS = {
+        nouns: [
+          "architecture", "framework", "entropy", "threshold", "complexity", 
+          "coherence", "structure", "mechanism", "destination", "vocabulary",
+          "dimension", "symmetry", "paradigm", "resonance", "matrix", "equilibrium"
+        ],
+        verbs: [
+          "illuminate", "articulate", "degrade", "compress", "transform", 
+          "construct", "produce", "retrieve", "evolve", "fluctuate", 
+          "align", "shatter", "manifest", "accelerate", "converge", "synthesize"
+        ],
+        modifiers: [
+          "melancholy", "responsive", "semantic", "contextual", "dynamic", 
+          "expressive", "spontaneous", "deterministic", "approximate", "variable",
+          "fluid", "harmonic", "stochastic", "precise", "cryptic", "infinite"
+        ]
+      };
+
+      if (btnConnect) {
+        btnConnect.addEventListener('click', async () => {
+          if (window.solana && window.solana.isPhantom) {
+            try {
+              walletStatus.textContent = "Connecting...";
+              const response = await window.solana.connect();
+              const userWalletAddress = response.publicKey.toString();
+              walletStatus.textContent = `${userWalletAddress.slice(0, 4)}...${userWalletAddress.slice(-4)}`;
+              walletStatus.style.color = '#33ff66';
+              btnConnect.textContent = "Connected";
+
+              const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
+              const pubKey = new solanaWeb3.PublicKey(userWalletAddress);
+              const balanceLamports = await connection.getBalance(pubKey);
+              walletBalance = balanceLamports / solanaWeb3.LAMPORTS_PER_SOL;
+
+              budget = Math.min(MAX_BUDGET, budget + Math.floor(walletBalance * 100) + 200);
+              updateBar();
+            } catch (err) {
+              walletStatus.textContent = "Error";
+            }
+          } else {
+            walletStatus.textContent = "No Phantom Found";
+          }
+        });
+      }
+
+      function exchangeSwapWord(word) {
+        const clean = word.toLowerCase().replace(/[^a-z]/g, '');
+        if (clean.length <= 3) return clean; 
+
+        const charSum = [...clean].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+        const vowels = (clean.match(/[aeiou]/g) || []).length;
+        const seedIndex = (charSum + clean.length * vowels) % 16; 
+
+        let selectedPool;
+        if (clean.length % 3 === 0) {
+          selectedPool = THESAURUS_POOLS.nouns;
+        } else if (vowels % 2 === 0) {
+          selectedPool = THESAURUS_POOLS.verbs;
+        } else {
+          selectedPool = THESAURUS_POOLS.modifiers;
+        }
+        return selectedPool[seedIndex];
+      }
+
+      function transform(str) {
+        const sourceWords = str.trim().split(/\s+/);
+        const swappedSentence = sourceWords.map(w => {
+          const punct = w.match(/[^a-zA-Z]*$/)?.[0] || '';
+          const clean = w.replace(/[^a-zA-Z]/g, '');
+          if (!clean) return w;
+          let replacement = exchangeSwapWord(clean);
+          const isCapital = w[0] === w[0].toUpperCase() && w[0] !== w[0].toLowerCase();
+          if (isCapital) {
+            replacement = replacement[0].toUpperCase() + replacement.slice(1);
+          }
+          return replacement + punct;
+        });
+        return swappedSentence.join(' ');
+      }
+
+      function updateBar() {
+        const pct = Math.max(0, budget / MAX_BUDGET);
+        const fill = document.getElementById('budget-fill');
+        const displayNum = document.getElementById('budget');
+        if (fill) {
+          fill.style.width = (pct * 100) + '%';
+          fill.style.background = pct > 0.5 ? '#33ff66' : pct > 0.2 ? '#c8a42a' : '#cc4444';
+        }
+        if (displayNum) displayNum.textContent = Math.max(0, budget);
+      }
+
+      if (btnSubmit) {
+        btnSubmit.addEventListener('click', () => {
+          const val = wordIn.value.trim();
+          if (!val) return;
+          const web3Bonus = Math.floor(walletBalance * 10);
+          budget = Math.min(MAX_BUDGET, budget + 120 + web3Bonus);
+          const finalOutput = transform(val);
+          wordOut.value = finalOutput;
+          const li = document.createElement('li');
+          li.innerHTML = `${val} <span class="out">→ ${finalOutput}</span>`;
+          historyList.prepend(li);
+          wordIn.value = '';
+          updateBar();
+        });
+      }
+
+      if (btnReset) {
+        btnReset.addEventListener('click', () => {
+          budget = 80;
+          wordOut.value = '';
+          wordIn.value = '';
+          historyList.innerHTML = '';
+          updateBar();
+        });
+      }
+
+      if (wordIn) {
+        wordIn.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') btnSubmit.click();
+        });
+      }
+
+      updateBar();
+    });
+  </script>
+
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Paste all of the JavaScript logic we just built right here
-  });
+
 </script>
