@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghosteyezzzz - Inner Portal</title>
+    <style>
+        body {
+            background: #020202;
+            color: #0aff9d;
+            font-family: monospace;
+            padding: 20px;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            text-shadow: 0 0 10px #0aff9d;
+            margin-bottom: 30px;
+        }
+
+        /* Responsive Window Grid Matrix */
+        .window-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Virtual Windows */
+        .portal-window {
+            background: rgba(10, 255, 157, 0.03);
+            border: 2px solid #0aff9d;
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(10, 255, 157, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .portal-window:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(10, 255, 157, 0.3);
+            background: rgba(10, 255, 157, 0.07);
+        }
+
+        .window-header {
+            font-weight: bold;
+            border-bottom: 1px dashed #0aff9d;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .status-tag {
+            background: #0aff9d;
+            color: black;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 3px;
+        }
+
+        .btn-action {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid #0aff9d;
+            color: #0aff9d;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: #0aff9d;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🔮 ELUR TOKEN PORTAL</h1>
+
+    <div class="window-grid">
+        
+        <div class="portal-window">
+            <div class="window-header">
+                <span>🗔 WINDOW_01 // METRICS</span>
+                <span class="status-tag">ACTIVE</span>
+            </div>
+            <p>Your ELUR holding tier unlocks level 1 system features.</p>
+            <div style="margin-top:15px; font-size:1.2rem;">⚡ Multiplier: 1.0x</div>
+        </div>
+
+        <div class="portal-window">
+            <div class="window-header">
+                <span>🗔 WINDOW_02 // GENERATOR</span>
+                <span class="status-tag" style="background:#ffaa00; color:black;">STAGING</span>
+            </div>
+            <p>Staking mechanisms and expansion loops to secure more tokens will manifest here.</p>
+            <button class="btn-action" onclick="alert('System calibration ongoing...')">Initialize Farming</button>
+        </div>
+
+        <div class="portal-window">
+            <div class="window-header">
+                <span>🗔 WINDOW_03 // CORE TOOLS</span>
+                <span class="status-tag">LOCKED</span>
+            </div>
+            <p>Advanced data matrix expansion modules are preparing deployment sequence.</p>
+            <button class="btn-action" disabled style="border-color:#444; color:#444; cursor:not-allowed;">System Encrypted</button>
+        </div>
+
+    </div>
+
+</body>
+</html>
