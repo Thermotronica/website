@@ -1,307 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>word tool</title>
-  
-  <style>
-    /* --- CORE SYSTEM GRAPHICS --- */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Courier New', monospace;
-      background: #0e0e0e;
-      color: #c8ffc8;
-      padding: 2rem;
-      max-width: 600px;
-    }
-
-    h1 {
-      font-size: 1rem;
-      font-weight: normal;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: #33ff66;
-      margin-bottom: 1.5rem;
-    }
-
-    #budget-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 1.2rem;
-      font-size: 0.75rem;
-      color: #226622;
-    }
-
-    #budget-bar {
-      flex: 1;
-      height: 3px;
-      background: #111;
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    #budget-fill {
-      height: 100%;
-      width: 100%;
-      background: #33ff66;
-      transition: width 0.2s, background 0.3s;
-    }
-
-    #budget {
-      min-width: 36px;
-      text-align: right;
-      color: #33ff66;
-    }
-
-    #input-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 1rem;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      background: #111;
-      border: 0.5px solid #1a3a1a;
-      color: #c8ffc8;
-      font-family: 'Courier New', monospace;
-      font-size: 0.85rem;
-      padding: 6px 10px;
-      outline: none;
-    }
-
-    input[type="text"]:focus {
-      border-color: #33ff66;
-    }
-
-    button {
-      background: transparent;
-      border: 0.5px solid #1a3a1a;
-      color: #33ff66;
-      font-family: 'Courier New', monospace;
-      font-size: 0.8rem;
-      padding: 6px 12px;
-      cursor: pointer;
-    }
-
-    button:hover { border-color: #33ff66; }
-    button:active { opacity: 0.6; }
-
-    label, #history-label {
-      display: block;
-      font-size: 0.7rem;
-      color: #226622;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-      margin-top: 1rem;
-    }
-
-    textarea {
-      width: 100%;
-      background: #111;
-      border: 0.5px solid #1a3a1a;
-      color: #c8ffc8;
-      font-family: 'Courier New', monospace;
-      font-size: 0.8rem;
-      padding: 8px 10px;
-      resize: none;
-      outline: none;
-      line-height: 1.6;
-    }
-
-    #history {
-      list-style: none;
-      font-size: 0.75rem;
-      color: #226622;
-      margin-top: 0.5rem;
-    }
-
-    #history li {
-      padding: 3px 0;
-      border-bottom: 0.5px solid #0f1f0f;
-    }
-
-    #history li span.out {
-      color: #33ff66;
-      margin-left: 8px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghosteyezzzz - Verification</title>
+    <style>
+        body {
+            background: black;
+            color: #0aff9d;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #box {
+            border: 2px solid #0aff9d;
+            padding: 30px;
+            background: rgba(0,0,0,0.8);
+            box-shadow: 0 0 20px rgba(10,255,157,0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        .status-line { margin: 15px 0; font-size: 1.1rem; }
+        .loading { animation: blink 1s infinite; }
+        @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.3; } }
+    </style>
 </head>
 <body>
 
-  <h1>word tool</h1>
+    <div id="box">
+        <h2>SECURITY CHECKPOINT</h2>
+        <hr style="border-color: #0aff9d; margin: 15px 0;">
+        <div id="status" class="status-line loading">Verifying Phantom Session...</div>
+    </div>
 
-  <div class="wallet-container" style="margin-bottom: 20px;">
-    <button id="btn-connect-wallet" style="padding: 6px 12px; background: #1a3a1a; color: #33ff66; border: 0.5px solid #33ff66; cursor: pointer;">
-      Connect Wallet
-    </button>
-    <span id="wallet-status" style="margin-left: 10px; color: #226622; font-size: 0.75rem;">Disconnected</span>
-  </div>
+    <script>
+        // Inject Solana Web3 dynamically
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js';
+        script.onload = verifyAndRoute;
+        document.head.appendChild(script);
 
-  <div id="budget-row">
-    <span>budget</span>
-    <div id="budget-bar"><div id="budget-fill"></div></div>
-    <span id="budget">80</span>
-  </div>
+        const TOKEN_MINT = 'ELURv1srPxU12BCQc1NuPMUB2aCavtZHJtXtuNCtT2FC';
 
-  <div id="input-row">
-    <input type="text" id="word-in" maxlength="80" placeholder="type a word or phrase">
-    <button id="btn-submit">transform</button>
-    <button id="btn-reset">reset</button>
-  </div>
-
-  <label for="word-out">output</label>
-  <textarea id="word-out" rows="10" readonly></textarea>
-
-  <p id="history-label">history</p>
-  <ul id="history"></ul>
-
-  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.98.0/lib/index.iife.js"></script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const MAX_BUDGET = 1000;
-      let budget = 80;
-      let walletBalance = 0;
-
-      const btnSubmit = document.getElementById('btn-submit');
-      const btnReset = document.getElementById('btn-reset');
-      const btnConnect = document.getElementById('btn-connect-wallet');
-      const walletStatus = document.getElementById('wallet-status');
-      const wordIn = document.getElementById('word-in');
-      const wordOut = document.getElementById('word-out');
-      const historyList = document.getElementById('history');
-
-      const THESAURUS_POOLS = {
-        nouns: [
-          "architecture", "framework", "entropy", "threshold", "complexity", 
-          "coherence", "structure", "mechanism", "destination", "vocabulary",
-          "dimension", "symmetry", "paradigm", "resonance", "matrix", "equilibrium"
-        ],
-        verbs: [
-          "illuminate", "articulate", "degrade", "compress", "transform", 
-          "construct", "produce", "retrieve", "evolve", "fluctuate", 
-          "align", "shatter", "manifest", "accelerate", "converge", "synthesize"
-        ],
-        modifiers: [
-          "melancholy", "responsive", "semantic", "contextual", "dynamic", 
-          "expressive", "spontaneous", "deterministic", "approximate", "variable",
-          "fluid", "harmonic", "stochastic", "precise", "cryptic", "infinite"
-        ]
-      };
-
-      if (btnConnect) {
-        btnConnect.addEventListener('click', async () => {
-          if (window.solana && window.solana.isPhantom) {
-            try {
-              walletStatus.textContent = "Connecting...";
-              const response = await window.solana.connect();
-              const userWalletAddress = response.publicKey.toString();
-              walletStatus.textContent = `${userWalletAddress.slice(0, 4)}...${userWalletAddress.slice(-4)}`;
-              walletStatus.style.color = '#33ff66';
-              btnConnect.textContent = "Connected";
-
-              const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'));
-              const pubKey = new solanaWeb3.PublicKey(userWalletAddress);
-              const balanceLamports = await connection.getBalance(pubKey);
-              walletBalance = balanceLamports / solanaWeb3.LAMPORTS_PER_SOL;
-
-              budget = Math.min(MAX_BUDGET, budget + Math.floor(walletBalance * 100) + 200);
-              updateBar();
-            } catch (err) {
-              walletStatus.textContent = "Error";
+        async function verifyAndRoute() {
+            const statusDiv = document.getElementById('status');
+            
+            if (!window.solana || !window.solana.isPhantom) {
+                statusDiv.innerHTML = "❌ Phantom Wallet Required.";
+                statusDiv.classList.remove('loading');
+                return;
             }
-          } else {
-            walletStatus.textContent = "No Phantom Found";
-          }
-        });
-      }
 
-      function exchangeSwapWord(word) {
-        const clean = word.toLowerCase().replace(/[^a-z]/g, '');
-        if (clean.length <= 3) return clean; 
+            try {
+                // Connect safely
+                const response = await window.solana.connect({ onlyIfTrusted: true }).catch(() => window.solana.connect());
+                const walletAddress = response.publicKey.toString();
+                
+                statusDiv.innerHTML = "🔍 Scanning Chain for ELUR Token...";
 
-        const charSum = [...clean].reduce((sum, char) => sum + char.charCodeAt(0), 0);
-        const vowels = (clean.match(/[aeiou]/g) || []).length;
-        const seedIndex = (charSum + clean.length * vowels) % 16; 
+                // Establish high-speed Helius fallback connection
+                const connection = new solanaWeb3.Connection(
+                    'https://mainnet.helius-rpc.com/?api-key=30e46a74-d4b1-419b-9800-4e3ff9f91a92',
+                    'confirmed'
+                );
 
-        let selectedPool;
-        if (clean.length % 3 === 0) {
-          selectedPool = THESAURUS_POOLS.nouns;
-        } else if (vowels % 2 === 0) {
-          selectedPool = THESAURUS_POOLS.verbs;
-        } else {
-          selectedPool = THESAURUS_POOLS.modifiers;
+                const PublicKey = solanaWeb3.PublicKey;
+                const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJsyFbPVwwQQfjarZaMS5dC76fy');
+                
+                const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+                    new PublicKey(walletAddress),
+                    { programId: TOKEN_PROGRAM_ID }
+                );
+
+                let hasToken = false;
+                tokenAccounts.value.forEach(account => {
+                    const mint = account.account.data.parsed.info.mint;
+                    const balance = account.account.data.parsed.info.tokenAmount.uiAmount;
+                    if (mint === TOKEN_MINT && balance > 0) {
+                        hasToken = true;
+                    }
+                });
+
+                if (hasToken) {
+                    statusDiv.innerHTML = "✅ ACCESS GRANTED. Routing...";
+                    setTimeout(() => {
+                        window.location.href = "portal-space.html";
+                    }, 800);
+                } else {
+                    statusDiv.innerHTML = "❌ Zero ELUR Balance. Access Denied.";
+                    statusDiv.classList.remove('loading');
+                }
+
+            } catch (err) {
+                console.error(err);
+                statusDiv.innerHTML = "⚠️ Network timeout. Bypassing safely...";
+                setTimeout(() => { window.location.href = "portal-space.html"; }, 1200);
+            }
         }
-        return selectedPool[seedIndex];
-      }
-
-      function transform(str) {
-        const sourceWords = str.trim().split(/\s+/);
-        const swappedSentence = sourceWords.map(w => {
-          const punct = w.match(/[^a-zA-Z]*$/)?.[0] || '';
-          const clean = w.replace(/[^a-zA-Z]/g, '');
-          if (!clean) return w;
-          let replacement = exchangeSwapWord(clean);
-          const isCapital = w[0] === w[0].toUpperCase() && w[0] !== w[0].toLowerCase();
-          if (isCapital) {
-            replacement = replacement[0].toUpperCase() + replacement.slice(1);
-          }
-          return replacement + punct;
-        });
-        return swappedSentence.join(' ');
-      }
-
-      function updateBar() {
-        const pct = Math.max(0, budget / MAX_BUDGET);
-        const fill = document.getElementById('budget-fill');
-        const displayNum = document.getElementById('budget');
-        if (fill) {
-          fill.style.width = (pct * 100) + '%';
-          fill.style.background = pct > 0.5 ? '#33ff66' : pct > 0.2 ? '#c8a42a' : '#cc4444';
-        }
-        if (displayNum) displayNum.textContent = Math.max(0, budget);
-      }
-
-      if (btnSubmit) {
-        btnSubmit.addEventListener('click', () => {
-          const val = wordIn.value.trim();
-          if (!val) return;
-          const web3Bonus = Math.floor(walletBalance * 10);
-          budget = Math.min(MAX_BUDGET, budget + 120 + web3Bonus);
-          const finalOutput = transform(val);
-          wordOut.value = finalOutput;
-          const li = document.createElement('li');
-          li.innerHTML = `${val} <span class="out">→ ${finalOutput}</span>`;
-          historyList.prepend(li);
-          wordIn.value = '';
-          updateBar();
-        });
-      }
-
-      if (btnReset) {
-        btnReset.addEventListener('click', () => {
-          budget = 80;
-          wordOut.value = '';
-          wordIn.value = '';
-          historyList.innerHTML = '';
-          updateBar();
-        });
-      }
-
-      if (wordIn) {
-        wordIn.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') btnSubmit.click();
-        });
-      }
-
-      updateBar();
-    });
-  </script>
+    </script>
 </body>
 </html>
-
-</script>
