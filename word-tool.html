@@ -1,3 +1,186 @@
-<a href="word-tool.html" style="padding: 10px; background: #1a3a1a; color: #33ff66; text-decoration: none; font-family: monospace; border: 0.5px solid #33ff66;">
-  Open Context Word Tool
-</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Context Word Tool</title>
+  <style>
+    body { font-family: 'Courier New', monospace; background: #0e0e0e; color: #33ff66; padding: 20px; }
+    h1 { font-size: 1.5rem; margin-bottom: 20px; text-transform: lowercase; }
+    #budget-row { display: flex; align-items: center; margin-bottom: 20px; font-size: 0.9rem; }
+    #budget-bar { width: 100px; height: 10px; background: #222; margin: 0 10px; border: 0.5px solid #33ff66; }
+    #budget-fill { height: 100%; width: 8%; background: #33ff66; transition: width 0.3s ease, background 0.3s ease; }
+    #input-row { margin-bottom: 20px; }
+    input, textarea { background: #111; color: #33ff66; border: 0.5px solid #33ff66; padding: 8px; font-family: inherit; }
+    input { width: 60%; max-width: 300px; }
+    label { display: block; margin-top: 15px; font-size: 0.9rem; }
+    textarea { display: block; margin-top: 5px; margin-bottom: 25px; width: calc(100% - 20px); max-width: 500px; }
+    button { padding: 6px 12px; background: #1a3a1a; color: #33ff66; border: 0.5px solid #33ff66; cursor: pointer; font-family: inherit; margin-right: 5px; }
+    button:hover { background: #2a5a2a; }
+    #history-label { margin-top: 30px; font-size: 0.9rem; border-bottom: 0.5px dashed #33ff66; padding-bottom: 5px; max-width: 500px; }
+    ul#history { list-style: none; padding: 0; max-width: 500px; font-size: 0.85rem; }
+    ul#history li { margin-bottom: 8px; color: #33ff66; }
+    .out { color: #888; }
+  </style>
+</head>
+<body>
+
+  <h1>context word tool</h1>
+
+  <div id="budget-row">
+    <span>budget</span>
+    <div id="budget-bar"><div id="budget-fill"></div></div>
+    <span id="budget">80</span>
+  </div>
+
+  <div id="input-row">
+    <input type="text" id="word-in" maxlength="200" placeholder="type a word or phrase">
+    <button id="btn-submit">transform</button>
+    <button id="btn-reset">reset</button>
+  </div>
+
+  <label for="word-out">output</label>
+  <textarea id="word-out" rows="10" readonly></textarea>
+
+  <p id="history-label">history</p>
+  <ul id="history"></ul>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const MAX_BUDGET = 1000;
+    let budget = 80;
+
+    const btnSubmit = document.getElementById('btn-submit');
+    const btnReset = document.getElementById('btn-reset');
+    const wordIn = document.getElementById('word-in');
+    const wordOut = document.getElementById('word-out');
+    const historyList = document.getElementById('history');
+
+    const THESAURUS_POOLS = {
+      nouns: [
+        "architecture", "framework", "entropy", "threshold", "complexity", 
+        "coherence", "structure", "mechanism", "destination", "vocabulary",
+        "dimension", "symmetry", "paradigm", "resonance", "matrix", "equilibrium",
+        "catalyst", "anomaly", "fragment", "spectrum", "trajectory", "nexus",
+        "gradient", "manifesto", "echo", "mirage", "horizon", "conduit",
+        "vortex", "climax", "synthesis", "amplitude", "void", "monolith"
+      ],
+      verbs: [
+        "illuminate", "articulate", "degrade", "compress", "transform", 
+        "construct", "produce", "retrieve", "evolve", "fluctuate", 
+        "align", "shatter", "manifest", "accelerate", "converge", "synthesize",
+        "amplify", "dissolve", "distort", "oscillate", "dissect", "cultivate",
+        "obliterate", "ignite", "mimic", "transcend", "anchor", "fracture",
+        "reverberate", "submerge", "calibrate", "diverge", "intersect", "weave"
+      ],
+      modifiers: [
+        "melancholy", "responsive", "semantic", "contextual", "dynamic", 
+        "expressive", "spontaneous", "deterministic", "approximate", "variable",
+        "fluid", "harmonic", "stochastic", "precise", "cryptic", "infinite",
+        "visceral", "ephemeral", "chaotic", "stark", "volatile", "surreal",
+        "monolithic", "liminal", "abstract", "kinetic", "latent", "tangible",
+        "obsolete", "vibrant", "ambient", "synthetic", "sterile", "intricate"
+      ],
+      adverbs: [
+        "silently", "abruptly", "systematically", "implicitly", "viscerally",
+        "perpetually", "articulately", "fluidly", "cryptically", "synchronously",
+        "organically", "statically", "mechanically", "deliberately", "vibrantly"
+      ],
+      connectors: [
+        "wherein", "thereby", "subsequently", "whereas", "consequently",
+        "henceforth", "midst", "vis-à-vis", "beneath", "recurrent-through"
+      ]
+    };
+
+    function exchangeSwapWord(word) {
+      const clean = word.toLowerCase().replace(/[^a-z]/g, '');
+      if (clean.length <= 3) return word; 
+
+      const charSum = [...clean].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+      const vowels = (clean.match(/[aeiou]/g) || []).length;
+
+      let selectedPool;
+      if (clean.endsWith('ly')) {
+        selectedPool = THESAURUS_POOLS.adverbs;
+      } else if (clean.length % 5 === 0) {
+        selectedPool = THESAURUS_POOLS.connectors;
+      } else if (clean.length % 3 === 0) {
+        selectedPool = THESAURUS_POOLS.nouns;
+      } else if (vowels % 2 === 0) {
+        selectedPool = THESAURUS_POOLS.verbs;
+      } else {
+        selectedPool = THESAURUS_POOLS.modifiers;
+      }
+
+      const seedIndex = (charSum + clean.length * vowels) % selectedPool.length; 
+      return selectedPool[seedIndex];
+    }
+
+    function transform(str) {
+      const sourceWords = str.trim().split(/\s+/);
+      const swappedSentence = sourceWords.map(w => {
+        const punct = w.match(/[^a-zA-Z]*$/)?.[0] || '';
+        const clean = w.replace(/[^a-zA-Z]/g, '');
+        if (!clean) return w;
+        
+        let replacement = exchangeSwapWord(clean);
+        
+        const isCapital = w[0] === w[0].toUpperCase() && w[0] !== w[0].toLowerCase();
+        if (isCapital) {
+          replacement = replacement[0].toUpperCase() + replacement.slice(1);
+        }
+        return replacement + punct;
+      });
+      return swappedSentence.join(' ');
+    }
+
+    function updateBar() {
+      const pct = Math.max(0, budget / MAX_BUDGET);
+      const fill = document.getElementById('budget-fill');
+      const displayNum = document.getElementById('budget');
+      if (fill) {
+        fill.style.width = (pct * 100) + '%';
+        fill.style.background = pct > 0.5 ? '#33ff66' : pct > 0.2 ? '#c8a42a' : '#cc4444';
+      }
+      if (displayNum) displayNum.textContent = Math.max(0, budget);
+    }
+
+    if (btnSubmit) {
+      btnSubmit.addEventListener('click', () => {
+        const val = wordIn.value.trim();
+        if (!val) return;
+
+        const textMultiplier = val.length * 4; 
+        budget = Math.min(MAX_BUDGET, budget + textMultiplier);
+
+        const finalOutput = transform(val);
+        wordOut.value = finalOutput;
+        const li = document.createElement('li');
+        li.innerHTML = `${val} <span class="out">→ ${finalOutput}</span>`;
+        historyList.prepend(li);
+        wordIn.value = '';
+        updateBar();
+      });
+    }
+
+    if (btnReset) {
+      btnReset.addEventListener('click', () => {
+        budget = 80;
+        wordOut.value = '';
+        wordIn.value = '';
+        historyList.innerHTML = '';
+        updateBar();
+      });
+    }
+
+    if (wordIn) {
+      wordIn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') btnSubmit.click();
+      });
+    }
+
+    updateBar();
+  });
+  </script>
+</body>
+</html>
