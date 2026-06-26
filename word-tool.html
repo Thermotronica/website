@@ -56,6 +56,7 @@
     const wordOut = document.getElementById('word-out');
     const historyList = document.getElementById('history');
 
+    // MAXIMIZED VOCABULARY POOLS: Maximized vectors for Levenshtein processing
     const THESAURUS_POOLS = {
       nouns: [
         "architecture", "framework", "entropy", "threshold", "complexity", 
@@ -63,7 +64,11 @@
         "dimension", "symmetry", "paradigm", "resonance", "matrix", "equilibrium",
         "catalyst", "anomaly", "fragment", "spectrum", "trajectory", "nexus",
         "gradient", "manifesto", "echo", "mirage", "horizon", "conduit",
-        "vortex", "climax", "synthesis", "amplitude", "void", "monolith"
+        "vortex", "climax", "synthesis", "amplitude", "void", "monolith",
+        "cipher", "oblivion", "parable", "bastion", "relic", "gulf", "apparatus",
+        "distortion", "spectacle", "facade", "tapestry", "stasis", "fluctuation",
+        "aperture", "crucible", "monologue", "scaffold", "phantom", "perimeter",
+        "abyss", "constellation", "fissure", "limbo"
       ],
       verbs: [
         "illuminate", "articulate", "degrade", "compress", "transform", 
@@ -71,7 +76,10 @@
         "align", "shatter", "manifest", "accelerate", "converge", "synthesize",
         "amplify", "dissolve", "distort", "oscillate", "dissect", "cultivate",
         "obliterate", "ignite", "mimic", "transcend", "anchor", "fracture",
-        "reverberate", "submerge", "calibrate", "diverge", "intersect", "weave"
+        "reverberate", "submerge", "calibrate", "diverge", "intersect", "weave",
+        "eclipse", "corrode", "dilute", "displace", "imprint", "generate", 
+        "subvert", "dissipate", "engulf", "paralyze", "reconfigure", "simulate", 
+        "evaporate", "crystallize", "scatter", "merge"
       ],
       modifiers: [
         "melancholy", "responsive", "semantic", "contextual", "dynamic", 
@@ -79,24 +87,61 @@
         "fluid", "harmonic", "stochastic", "precise", "cryptic", "infinite",
         "visceral", "ephemeral", "chaotic", "stark", "volatile", "surreal",
         "monolithic", "liminal", "abstract", "kinetic", "latent", "tangible",
-        "obsolete", "vibrant", "ambient", "synthetic", "sterile", "intricate"
+        "obsolete", "vibrant", "ambient", "synthetic", "sterile", "intricate",
+        "spectral", "archival", "monochrome", "opaque", "residual", "viscous",
+        "atmospheric", "subliminal", "skeletal", "algorithmic", "fading",
+        "holographic", "recurrent", "clinical", "dormant", "fragmented", "immutable",
+        // --- Newly Infused Modifiers ---
+        "peripheral", "anomalous", "asymmetrical", "redundant", "recursive", 
+        "elastic", "fractured", "subterranean", "isomorphic", "crystalline", 
+        "synthetic", "transient", "microscopic", "macroscopic", "primordial"
       ],
       adverbs: [
         "silently", "abruptly", "systematically", "implicitly", "viscerally",
         "perpetually", "articulately", "fluidly", "cryptically", "synchronously",
-        "organically", "statically", "mechanically", "deliberately", "vibrantly"
+        "organically", "statically", "mechanically", "deliberately", "vibrantly",
+        "subliminally", "retroactively", "continuously", "sterilely", "artificially",
+        "spatially", "chronologically", "intricately", "clinically", "abstractly",
+        // --- Newly Infused Adverbs ---
+        "erratically", "mathematically", "parametrically", "meticulously", "subconsciously",
+        "tangibly", "harmonically", "symmetrically", "autonomously", "temporally",
+        "transiently", "cohesively", "architecturally", "procedurally", "monolithically"
       ],
       connectors: [
         "wherein", "thereby", "subsequently", "whereas", "consequently",
-        "henceforth", "midst", "vis-à-vis", "beneath", "recurrent-through"
+        "henceforth", "midst", "vis-à-vis", "beneath", "recurrent-through",
+        "insofar", "thereupon", "trans-bordering", "inter-nested", "underlying",
+        // --- Newly Infused Connectors ---
+        "stratum-level", "cross-cutting", "theretofore", "counter-wise", "interior-to",
+        "lateral-bias", "interfacing", "tangent-to", "nexus-point", "parallel-with"
       ]
     };
+
+    function getLevenshteinDistance(a, b) {
+      const matrix = [];
+      for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+      for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1,
+              matrix[i][j - 1] + 1,
+              matrix[i - 1][j] + 1
+            );
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
 
     function exchangeSwapWord(word) {
       const clean = word.toLowerCase().replace(/[^a-z]/g, '');
       if (clean.length <= 3) return word; 
 
-      const charSum = [...clean].reduce((sum, char) => sum + char.charCodeAt(0), 0);
       const vowels = (clean.match(/[aeiou]/g) || []).length;
 
       let selectedPool;
@@ -112,8 +157,22 @@
         selectedPool = THESAURUS_POOLS.modifiers;
       }
 
-      const seedIndex = (charSum + clean.length * vowels) % selectedPool.length; 
-      return selectedPool[seedIndex];
+      let bestWord = selectedPool[0];
+      let targetDistance = Math.floor(clean.length / 2); 
+      let closestDiff = Infinity;
+
+      for (let i = 0; i < selectedPool.length; i++) {
+        const poolWord = selectedPool[i];
+        const distance = getLevenshteinDistance(clean, poolWord);
+        
+        const diff = Math.abs(distance - targetDistance);
+        if (diff < closestDiff) {
+          closestDiff = diff;
+          bestWord = poolWord;
+        }
+      }
+
+      return bestWord;
     }
 
     function transform(str) {
