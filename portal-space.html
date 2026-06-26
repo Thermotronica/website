@@ -195,7 +195,7 @@
                 </div>
                 <p id="desc1">Extracting analytical distribution files based on current verified holdings...</p>
             </div>
-            <button class="btn-action" id="btn1" onclick="alert('Data manifest verified completely.')">Dump Metadata</button>
+            <button class="btn-action" id="btn1" onclick="window.open('word-tool.html', '_blank')">Dump Metadata</button>
         </div>
 
         <div class="portal-window locked" id="win2">
@@ -238,7 +238,6 @@
         let simulatedPoints = 0;
 
         async function fetchFullTokenData() {
-            // Read target signature directly from wallet session
             let walletAddress = localStorage.getItem('connectedWallet');
             
             if (!walletAddress && window.solana && window.solana.isPhantom) {
@@ -258,7 +257,6 @@
             document.getElementById('walletAddr').innerHTML = walletAddress.slice(0,6) + "..." + walletAddress.slice(-6);
 
             try {
-                // Initialize clean public cluster lookups
                 const connection = new solanaWeb3.Connection(
                     'https://mainnet.helius-rpc.com/?api-key=30e46a74-d4b1-419b-9800-4e3ff9f91a92',
                     'confirmed'
@@ -284,7 +282,6 @@
 
             } catch (err) {
                 console.log("Network firewall active. Pulling local cache values.");
-                // Safe simulation backup value if the blockchain throws any endpoint blockages
                 currentBalance = parseFloat(localStorage.getItem('elurBalance')) || 100.0;
                 processExtractedData(currentBalance);
             }
@@ -303,7 +300,6 @@
                 tier = "TIER 1 // HOLDER";
                 multiplier = "1.50x";
                 
-                // Unlock Window 2 dynamically
                 const win2 = document.getElementById('win2');
                 const tag2 = document.getElementById('tag2');
                 const btn2 = document.getElementById('btn2');
@@ -331,7 +327,6 @@
             simulatedPoints += Math.max(1, Math.floor(increment));
             document.getElementById('pointsVal').innerHTML = simulatedPoints;
             
-            // Visual pulse feedback on click
             document.getElementById('pointsVal').style.color = "#44ff44";
             setTimeout(() => { document.getElementById('pointsVal').style.color = "#fff"; }, 150);
         }
